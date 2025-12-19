@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Memory Match</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Neon Match</h1>
+      <div class="stats">
+        <div class="stat-box">Moves: <span id="moves">0</span></div>
+        <div class="stat-box">Time: <span id="time">00:00</span></div>
+      </div>
+      <button
+        onclick="restartGame()"
+        style="margin-top: 15px; font-size: 0.8rem; padding: 8px 20px"
+      >
+        Reset
+      </button>
+    </header>
+
+    <div class="game-board" id="gameBoard"></div>
+
+    <div class="overlay" id="winModal">
+      <h2>You Won!</h2>
+      <p style="margin-bottom: 20px; font-size: 1.2rem">
+        Final Time: <span id="finalTime"></span> | Moves: <span id="finalMoves"></span>
+      </p>
+      <button onclick="restartGame()">Play Again</button>
+    </div>
+
+    <canvas id="confetti"></canvas>
+
+    <script src="script.js"></script>
+  </body>
+</html>

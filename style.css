@@ -47,6 +47,7 @@ h1 {
   gap: 20px;
   font-size: 1.2rem;
   justify-content: center;
+  margin-bottom: 15px;
 }
 
 .stat-box {
@@ -54,6 +55,12 @@ h1 {
   padding: 5px 15px;
   border-radius: 20px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.controls {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
 }
 
 /* Game Grid */
@@ -123,7 +130,28 @@ h1 {
   box-shadow: 0 0 15px var(--accent-glow) inset;
 }
 
-/* Overlay / Modal */
+/* Buttons */
+button {
+  padding: 8px 20px;
+  font-size: 0.9rem;
+  background: transparent;
+  color: var(--accent-color);
+  border: 2px solid var(--accent-color);
+  border-radius: 50px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-weight: bold;
+}
+
+button:hover {
+  background: var(--accent-color);
+  color: #000;
+  box-shadow: 0 0 15px var(--accent-glow);
+}
+
+/* Modals */
 .overlay {
   position: fixed;
   top: 0;
@@ -147,31 +175,49 @@ h1 {
   pointer-events: all;
 }
 
+.modal-content {
+  background: #1a1a1a;
+  padding: 30px;
+  border-radius: 15px;
+  border: 1px solid var(--accent-color);
+  box-shadow: 0 0 30px var(--accent-glow);
+  text-align: center;
+  max-width: 90%;
+  width: 400px;
+}
+
 .overlay h2 {
-  font-size: 3rem;
+  font-size: 2.5rem;
   color: var(--accent-color);
   margin-bottom: 20px;
-  text-shadow: 0 0 20px var(--accent-glow);
+  text-shadow: 0 0 10px var(--accent-glow);
 }
 
-button {
-  padding: 12px 30px;
-  font-size: 1.2rem;
-  background: transparent;
+/* History Table */
+.history-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  color: #ddd;
+}
+
+.history-table th,
+.history-table td {
+  padding: 10px;
+  border-bottom: 1px solid #333;
+}
+
+.history-table th {
   color: var(--accent-color);
-  border: 2px solid var(--accent-color);
-  border-radius: 50px;
-  cursor: pointer;
-  transition: all 0.3s ease;
   text-transform: uppercase;
-  letter-spacing: 2px;
-  font-weight: bold;
+  font-size: 0.8rem;
+  letter-spacing: 1px;
 }
 
-button:hover {
-  background: var(--accent-color);
-  color: #000;
-  box-shadow: 0 0 20px var(--accent-glow);
+.history-actions {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
 }
 
 /* Particles for winning effect */
@@ -205,5 +251,8 @@ canvas {
   }
   .game-board {
     grid-template-columns: repeat(4, var(--card-size));
+  }
+  .modal-content {
+    padding: 20px;
   }
 }

@@ -13,22 +13,45 @@
         <div class="stat-box">Moves: <span id="moves">0</span></div>
         <div class="stat-box">Time: <span id="time">00:00</span></div>
       </div>
-      <button
-        onclick="restartGame()"
-        style="margin-top: 15px; font-size: 0.8rem; padding: 8px 20px"
-      >
-        Reset
-      </button>
+      <div class="controls">
+        <button onclick="restartGame()">Restart</button>
+        <button onclick="showHistory()">History</button>
+      </div>
     </header>
 
     <div class="game-board" id="gameBoard"></div>
 
     <div class="overlay" id="winModal">
-      <h2>You Won!</h2>
-      <p style="margin-bottom: 20px; font-size: 1.2rem">
-        Final Time: <span id="finalTime"></span> | Moves: <span id="finalMoves"></span>
-      </p>
-      <button onclick="restartGame()">Play Again</button>
+      <div class="modal-content">
+        <h2>You Won!</h2>
+        <p style="margin-bottom: 20px; font-size: 1.2rem">
+          Final Time: <span id="finalTime"></span><br />Moves: <span id="finalMoves"></span>
+        </p>
+        <button onclick="restartGame()">Play Again</button>
+      </div>
+    </div>
+
+    <div class="overlay" id="historyModal">
+      <div class="modal-content">
+        <h2>High Scores</h2>
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>Rank</th>
+              <th>Moves</th>
+              <th>Time</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody id="historyBody"></tbody>
+        </table>
+        <div class="history-actions">
+          <button onclick="closeHistory()">Close</button>
+          <button onclick="clearHistory()" style="border-color: #ff3366; color: #ff3366">
+            Clear
+          </button>
+        </div>
+      </div>
     </div>
 
     <canvas id="confetti"></canvas>

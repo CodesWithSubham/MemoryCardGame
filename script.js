@@ -13,6 +13,8 @@ const board = document.getElementById("gameBoard");
 const movesDisplay = document.getElementById("moves");
 const timeDisplay = document.getElementById("time");
 const winModal = document.getElementById("winModal");
+const historyModal = document.getElementById("historyModal");
+const historyBody = document.getElementById("historyBody");
 
 // Initialize Game
 function initGame() {
@@ -120,6 +122,9 @@ function endGame() {
   clearInterval(timerInterval);
   document.getElementById("finalTime").innerText = timeDisplay.innerText;
   document.getElementById("finalMoves").innerText = moves;
+
+  saveToHistory(); // Save the score
+
   winModal.classList.add("visible");
   triggerConfetti();
 }
@@ -128,7 +133,64 @@ function restartGame() {
   initGame();
 }
 
-// Simple Confetti Effect
+// --- HISTORY LOGIC --- //
+
+function saveToHistory() {
+  let history = JSON.parse(localStorage.getItem("neonMemoryHistory")) || [];
+
+  const newRecord = {
+    moves: moves,
+    timeStr: timeDisplay.innerText,
+    seconds: seconds,
+    date: new Date().toLocaleDateString(undefined, { month: "short", day: "numeric" }),
+  };
+
+  history.push(newRecord);
+
+  // Sort by lowest moves, then lowest time
+  history.sort((a, b) => a.moves - b.moves || a.seconds - b.seconds);
+
+  // Keep only top 5 scores
+  history = history.slice(0, 5);
+
+  localStorage.setItem("neonMemoryHistory", JSON.stringify(history));
+}
+
+function showHistory() {
+  let history = JSON.parse(localStorage.getItem("neonMemoryHistory")) || [];
+  historyBody.innerHTML = "";
+
+  if (history.length === 0) {
+    historyBody.innerHTML = `<tr><td colspan="4">No games played yet.</td></tr>`;
+  } else {
+    history.forEach((record, index) => {
+      const row = `
+                        <tr>
+                            <td>#${index + 1}</td>
+                            <td>${record.moves}</td>
+                            <td>${record.timeStr}</td>
+                            <td>${record.date}</td>
+                        </tr>
+                    `;
+      historyBody.innerHTML += row;
+    });
+  }
+  historyModal.classList.add("visible");
+}
+
+function closeHistory() {
+  historyModal.classList.remove("visible");
+}
+
+function clearHistory() {
+  if (confirm("Are you sure you want to clear your high scores?")) {
+    localStorage.removeItem("neonMemoryHistory");
+    showHistory(); // Refresh the modal view
+  }
+}
+
+// --- CONFETTI LOGIC --- //
+
 function triggerConfetti() {
   const canvas = document.getElementById("confetti");
   const ctx = canvas.getContext("2d");
@@ -148,18 +210,22 @@ function triggerConfetti() {
 
   function draw() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
+    let active = false;
     particles.forEach((p) => {
       p.x += p.vx;
       p.y += p.vy;
-      if (p.y > canvas.height) p.y = -10;
+      if (p.y <= canvas.height) active = true;
       ctx.fillStyle = p.color;
       ctx.fillRect(p.x, p.y, 8, 8);
     });
-    if (winModal.classList.contains("visible")) requestAnimationFrame(draw);
-    else ctx.clearRect(0, 0, canvas.width, canvas.height);
+    if (active && winModal.classList.contains("visible")) {
+      requestAnimationFrame(draw);
+    } else {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+    }
   }
   draw();
 }
 
-// Start on load
+// Initialize on load
 initGame();

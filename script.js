@@ -1,22 +1,39 @@
+// @ts-check
+
 const symbols = ["⚡", "💎", "🔥", "🚀", "🌟", "🍀", "🎵", "⚓"];
 let cards = [...symbols, ...symbols]; // Duplicating for pairs
+/** @type {HTMLElement | null} */
 let firstCard = null;
+/** @type {HTMLElement | null} */
 let secondCard = null;
 let lockBoard = false;
 let moves = 0;
 let matchesFound = 0;
-let timerInterval;
+
+/** @type {number | null} */
+let timerInterval = null;
 let seconds = 0;
 let gameStarted = false;
 
-const board = document.getElementById("gameBoard");
-const movesDisplay = document.getElementById("moves");
-const timeDisplay = document.getElementById("time");
-const winModal = document.getElementById("winModal");
-const historyModal = document.getElementById("historyModal");
-const historyBody = document.getElementById("historyBody");
+/**
+ * Gets element by ID and throws if missing
+ * @param {string} id
+ * @returns {HTMLElement}
+ */
+function getElement(id) {
+  const el = document.getElementById(id);
+  if (!el) throw new Error(`Missing element: ${id}`);
+  return el;
+}
 
-// Initialize Game
+const board = getElement("gameBoard");
+const movesDisplay = getElement("moves");
+const timeDisplay = getElement("time");
+const winModal = getElement("winModal");
+const historyModal = getElement("historyModal");
+const historyBody = getElement("historyBody");
+
+/** Initialize Game */
 function initGame() {
   // Reset state
   board.innerHTML = "";
@@ -27,10 +44,13 @@ function initGame() {
   lockBoard = false;
   firstCard = null;
   secondCard = null;
-  clearInterval(timerInterval);
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
 
   // UI Reset
-  movesDisplay.innerText = moves;
+  movesDisplay.innerText = moves.toString();
   timeDisplay.innerText = "00:00";
   winModal.classList.remove("visible");
 
@@ -48,7 +68,7 @@ function initGame() {
                     <div class="card-face card-back">${symbol}</div>
                 `;
 
-    cardElement.addEventListener("click", flipCard);
+    cardElement.addEventListener("click", (e) => flipCard(e.currentTarget));
     board.appendChild(cardElement);
   });
 }
@@ -66,35 +86,43 @@ function startTimer() {
   }, 1000);
 }
 
-function flipCard() {
+/**
+ * Handles card flip logic
+ * @param {EventTarget | null} target
+ */
+function flipCard(target) {
+  if (!(target instanceof HTMLDivElement)) return;
+
   if (lockBoard) return;
-  if (this === firstCard) return;
+  if (target === firstCard) return;
 
   startTimer();
 
-  this.classList.add("flipped");
+  target.classList.add("flipped");
 
   if (!firstCard) {
-    firstCard = this;
+    firstCard = target;
     return;
   }
 
-  secondCard = this;
+  secondCard = target;
   incrementMoves();
   checkForMatch();
 }
 
 function incrementMoves() {
   moves++;
-  movesDisplay.innerText = moves;
+  movesDisplay.innerText = moves.toString();
 }
 
 function checkForMatch() {
+  if (!firstCard || !secondCard) return;
   let isMatch = firstCard.dataset.symbol === secondCard.dataset.symbol;
   isMatch ? disableCards() : unflipCards();
 }
 
 function disableCards() {
+  if (!firstCard || !secondCard) return;
   firstCard.classList.add("matched");
   secondCard.classList.add("matched");
   resetBoard();
@@ -108,6 +136,7 @@ function disableCards() {
 function unflipCards() {
   lockBoard = true;
   setTimeout(() => {
+    if (!firstCard || !secondCard) return;
     firstCard.classList.remove("flipped");
     secondCard.classList.remove("flipped");
     resetBoard();
@@ -119,9 +148,12 @@ function resetBoard() {
 }
 
 function endGame() {
-  clearInterval(timerInterval);
-  document.getElementById("finalTime").innerText = timeDisplay.innerText;
-  document.getElementById("finalMoves").innerText = moves;
+  if (timerInterval !== null) {
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  getElement("finalTime").innerText = timeDisplay.innerText;
+  getElement("finalMoves").innerText = moves.toString();
 
   saveToHistory(); // Save the score
 
@@ -135,8 +167,15 @@ function restartGame() {
 
 // --- HISTORY LOGIC --- //
 
+/** @returns {{moves:number, timeStr:string, seconds:number, date:string}[]} */
+function getHistory() {
+  const localHistory = localStorage.getItem("neonMemoryHistory");
+  if (!localHistory) return [];
+  return JSON.parse(localHistory);
+}
+
 function saveToHistory() {
-  let history = JSON.parse(localStorage.getItem("neonMemoryHistory")) || [];
+  let history = getHistory();
 
   const newRecord = {
     moves: moves,
@@ -157,7 +196,7 @@ function saveToHistory() {
 }
 
 function showHistory() {
-  let history = JSON.parse(localStorage.getItem("neonMemoryHistory")) || [];
+  let history = getHistory();
   historyBody.innerHTML = "";
 
   if (history.length === 0) {
@@ -165,13 +204,13 @@ function showHistory() {
   } else {
     history.forEach((record, index) => {
       const row = `
-                        <tr>
-                            <td>#${index + 1}</td>
-                            <td>${record.moves}</td>
-                            <td>${record.timeStr}</td>
-                            <td>${record.date}</td>
-                        </tr>
-                    `;
+                    <tr>
+                      <td>#${index + 1}</td>
+                      <td>${record.moves}</td>
+                      <td>${record.timeStr}</td>
+                      <td>${record.date}</td>
+                    </tr>
+                  `;
       historyBody.innerHTML += row;
     });
   }
@@ -192,12 +231,14 @@ function clearHistory() {
 // --- CONFETTI LOGIC --- //
 
 function triggerConfetti() {
-  const canvas = document.getElementById("confetti");
-  const ctx = canvas.getContext("2d");
+  const canvas = /** @type {HTMLCanvasElement} */ (getElement("confetti"));
+
   canvas.width = window.innerWidth;
   canvas.height = window.innerHeight;
 
+  /** @type {{x:number, y:number, vx:number, vy:number, color:string}[]} */
   const particles = [];
+
   for (let i = 0; i < 100; i++) {
     particles.push({
       x: Math.random() * canvas.width,
@@ -209,6 +250,9 @@ function triggerConfetti() {
   }
 
   function draw() {
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     let active = false;
     particles.forEach((p) => {
@@ -228,4 +272,4 @@ function triggerConfetti() {
 }
 
 // Initialize on load
-initGame();
+document.addEventListener("DOMContentLoaded", initGame);
